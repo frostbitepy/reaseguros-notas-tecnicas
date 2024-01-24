@@ -1,12 +1,12 @@
 """Welcome to Reflex! This file outlines the steps to create a basic app."""
 from rxconfig import config
-from listado_reaseguros.state import State
+from listado_reaseguros.state import State, FileState
 
 import reflex as rx
 
 docs_url = "https://reflex.dev/docs/getting-started/introduction"
 filename = f"{config.app_name}/{config.app_name}.py"
-
+color = "rgb(107,99,246)"
 
 @rx.page()
 def index() -> rx.Component:
@@ -57,20 +57,159 @@ def about():
         )
     )
 
+
 @rx.page(route="/cuenta_tecnica", title="Cuentas Técnicas")
 def cuenta_tecnica():
-    return rx.upload(
-        rx.text(
-            "Drag and drop files here or click to select files"
-        ),
+    return rx.fragment(
+        rx.vstack(
+        rx.heading("Cuentas Técnicas", font_size="1.5em"),
+        rx.center(
+        rx.hstack(
+            rx.upload(
+                rx.button(
+                "Select File(s)",
+                height="30px",
+                width="150px",
+                color=color,
+                bg="white",
+                border=f"1px solid {color}",
+            ),
+            rx.text(
+                "Cargar aquí planilla de Emisiones",
+                height="40px",
+                width="180px",
+            ),
+            border="1px dotted black",
+            padding="2em",
+            ), # Upload 
+            rx.upload(
+                rx.button(
+                "Select File(s)",
+                height="30px",
+                width="150px",
+                color=color,
+                bg="white",
+                border=f"1px solid {color}",
+            ),
+            rx.text(
+                "Cargar aquí planilla de Anulaciones",
+                height="40px",
+                width="180px",
+            ),
+            border="1px dotted black",
+            padding="2em",
+            ), # Upload 
+            rx.upload(
+                rx.button(
+                "Select File(s)",
+                height="30px",
+                width="150px",
+                color=color,
+                bg="white",
+                border=f"1px solid {color}",
+            ),
+            rx.text(
+                "Cargar aquí planilla de Recuperos",
+                height="40px",
+                width="180px",
+            ),
+            border="1px dotted black",
+            padding="2em",
+            ), # Upload           
+        ), # hstack
+        ), # center
+        rx.vstack(
+            rx.button(
+                "Upload Files",
+                on_click=FileState.handle_upload(rx.upload_files()),
+            ), # button
+            rx.button(
+                    "Clear .xlsx Files",
+                    on_click=FileState.clear_xlsx_files,
+                ),  # button to clear .xlsx files    
+        ),# vstack
         spacing="1.5em",
         font_size="1em",
         padding_top="5%",
-        border="1px dotted rgb(107,99,246)",
-        padding="5em",
+        ), # vsatck
+        rx.text_area(
+                is_disabled=True,
+                value=FileState.file_str,
+                width="100%",
+                height="100%",
+                bg="white",
+                color="black",
+                placeholder="No File",
+                min_height="20em",
+        ), # text_area
+    ) # fragment
+    
+
+@rx.page(route="/upload_file", title="Upload xlsx files")
+def upload_files():
+    return rx.vstack(
+        rx.upload(
+            rx.button(
+                "Select File(s)",
+                height="30px",
+                width="150px",
+                color=color,
+                bg="white",
+                border=f"1px solid {color}",
+            ),
+            rx.text(
+                "Arrastra los archivos aquí o haz click para seleccionarlos",
+                height="60px",
+                width="200px",
+            ),
+            border="1px dotted black",
+            padding="2em",
+        ),
+        rx.hstack(
+            rx.button(
+                "Upload",
+                on_click=FileState.handle_upload(rx.upload_files()),
+            ),
+        ),
+        rx.heading("Files:"),
+        rx.cond(
+            FileState.is_uploading,
+            rx.progress(is_indeterminate=True, color="blue", width="100%"),
+            rx.progress(value=0, width="100%"),
+        ),
+        rx.text_area(
+            is_disabled=True,
+            value=FileState.file_str,
+            width="100%",
+            height="100%",
+            bg="white",
+            color="black",
+            placeholder="No File",
+            min_height="20em",
+        ),
+    )
+
+@rx.page(route="/display", title="Display cuenta tecnica")
+def upload_files():
+    return rx.vstack(
+        rx.text_area(
+            is_disabled=False,
+            value=FileState.file_str,
+            width="50%",
+            height="50%",
+            bg="white",
+            color="black",
+            placeholder="No File",
+            min_height="10em",
+        ),
+        rx.button(
+            "Convert to DataFrame",
+            on_click=FileState.convert_to_dataframe(rx.upload_files()[0].filename, rx.get_asset_path(rx.upload_files()[0].filename)),
+        ),    
     )
 
 # Create app instance and add index page.
 app = rx.App()
 #app.add_page(index)     
 #app.add_page(about, route="/about")
+
