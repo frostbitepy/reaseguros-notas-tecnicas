@@ -4,6 +4,7 @@ from listado_reaseguros.state import State
 from listado_reaseguros.navbar_component import navbar
 
 import reflex as rx
+import pandas as pd
 
 docs_url = "https://reflex.dev/docs/getting-started/introduction"
 filename = f"{config.app_name}/{config.app_name}.py"
@@ -51,6 +52,16 @@ def cuenta():
                 padding="2em",
                 boxShadow='md',
                 ),
+            rx.hstack(rx.foreach(rx.selected_files, rx.text)),
+            rx.button(
+                "Upload",
+                on_click=lambda: State.handle_upload(rx.upload_files()),
+            ),
+            rx.button(
+                "Convert to DataFrame",
+                on_click=lambda: State.convert_to_df(rx.upload_files()),
+            ),
+            rx.html(State.df_html),
         ),
     )
     
